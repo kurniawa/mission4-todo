@@ -124,7 +124,7 @@
         dueDate: todoDueDateInput.value,
         priority: todoPriorityInput.value,
         createdAt: new Date().toISOString(),
-        completed: false,
+        status: "active", // active, overdue, completed
       };
 
       todos.push(newTodo);
@@ -158,9 +158,9 @@
               </div>
             </div>
             <div>
-              <button class="text-blue-500 underline" onclick="toggleDetails(${todo.id})">Details</button>
-              <button class="text-green-500 ml-2" onclick="markAsDone(${todo.id})">Done</button>
-              <button class="text-red-500 ml-2" onclick="deleteTodo(${todo.id})">Delete</button>
+              <button class="text-blue-500 underline" onclick="toggleDetails(${todo.id})" class="hover:cursor-pointer">Details</button>
+              <button class="text-green-500 ml-2" onclick="markAsDone(${todo.id})" class="hover:cursor-pointer">Done</button>
+              <button class="text-red-500 ml-2" onclick="deleteTodo(${todo.id})" class="hover:cursor-pointer">Delete</button>
             </div>
           </div>
         `;
