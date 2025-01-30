@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List</title>
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-gray-100 p-4 text-slate-600 text-xs">
+  <div class="max-w-xl mx-auto min-h-1/2 border border-slate-300 bg-white shadow p-3">
+    <!-- Input for Name and Position -->
+    <div id="user-info-wrapper">
+      <div id="form-user-info">
+        <div  class="flex gap-4">
+          <input id="name" type="text" placeholder="Name" class="w-full p-2 border border-slate-300 rounded">
+          <input id="position" type="text" placeholder="Position" class="w-full p-2 border border-slate-300 rounded">
+        </div>
+        <button id="saveUser" class="bg-blue-500 text-white px-4 py-2 rounded">Save</button>
+      </div>
+
+      <div id="user-info" class="flex justify-end">
+        <div class="border-b border-slate-300 hover:cursor-pointer">
+          <span class="text-indigo-400 font-bold">Adi Kurniawan</span>
+          <span class="text-orange-500">(Top Programmer)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input for To-Do -->
+    <div class="mt-5">
+      <div class="">
+        <div class="border border-slate-300 p-1 flex gap-1">
+          <input id="todoTitle" type="text" placeholder="To do" class="flex-grow p-2">
+          <div class="flex items-center">
+            <span>Priority:</span>
+          </div>
+          <select id="todoPriority" class="border border-slate-300">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
+          <button id="button-detail-todo" type="button" class="px-1 text-yellow-600 font-bold border-2 border-yellow-400">Detail</button>
+          <button type="button" id="addTodo" class="px-1 bg-emerald-300 text-white font-bold border-2 border-emerald-400">Add to-do</button>
+        </div>
+        <div id="textarea-todo-detail" class="hidden mt-1">
+          <div class="flex gap-1">
+            <textarea id="todoDetail" rows="3" placeholder="Detail" class="p-2 border border-slate-300 flex-grow"></textarea>
+            <div class="">
+              <div>
+                <label for="for-date">For date:</label>
+                <div><input id="todoDate" type="date" class="p-2 border border-slate-300"></div>
+              </div>
+              <div class="mt-2">
+                <label for="due-date">Due date:</label>
+                <div><input id="todoDueDate" type="date" class="p-2 border border-slate-300"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- To-Do Lists -->
+    <div class="mt-5">
+      <div id="activeTodoList">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">To-Do List</h2>
+        <div>
+          <input id="selectAllActive" type="checkbox" class="mr-2"> <label>Select All</label>
+          <ul id="activeTodos" class="mt-4 space-y-2"></ul>
+        </div>
+      </div>
+
+      <div id="completedTodoList">
+        <h2 class="text-xl font-bold text-gray-800 mt-8 mb-4">Completed To-Do</h2>
+        <div>
+          <input id="selectAllCompleted" type="checkbox" class="mr-2"> <label>Select All</label>
+          <ul id="completedTodos" class="mt-4 space-y-2"></ul>
+        </div>
+      </div>
+
+      <div id="overdueTodoList">
+        <h2 class="text-xl font-bold text-gray-800 mt-8 mb-4">Overdue To-Do</h2>
+        <div>
+          <input id="selectAllOverdue" type="checkbox" class="mr-2"> <label>Select All</label>
+          <ul id="overdueTodos" class="mt-4 space-y-2"></ul>
+        </div>
+      </div>
+      </div>
+  </div>
+
+  <script>
+    const nameInput = document.getElementById('name');
+    const positionInput = document.getElementById('position');
+    const saveUserBtn = document.getElementById('saveUser');
+
+    const todoTitleInput = document.getElementById('todoTitle');
+    const todoDetailInput = document.getElementById('todoDetail');
+    const todoDateInput = document.getElementById('todoDate');
+    const todoDueDateInput = document.getElementById('todoDueDate');
+    const todoPriorityInput = document.getElementById('todoPriority');
+    const addTodoBtn = document.getElementById('addTodo');
+
+    const activeTodosList = document.getElementById('activeTodos');
+    const completedTodosList = document.getElementById('completedTodos');
+    const overdueTodosList = document.getElementById('overdueTodos');
+
+    const todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+    function saveUser() {
+      const user = {
+        name: nameInput.value,
+        position: positionInput.value,
+      };
+      localStorage.setItem('user', JSON.stringify(user));
+      alert('User information saved!');
+    }
+
+    function addTodo() {
+      const newTodo = {
+        id: Date.now(),
+        title: todoTitleInput.value,
+        detail: todoDetailInput.value,
+        date: todoDateInput.value,
+        dueDate: todoDueDateInput.value,
+        priority: todoPriorityInput.value,
+        createdAt: new Date().toISOString(),
+        completed: false,
+      };
+
+      todos.push(newTodo);
+      localStorage.setItem('todos', JSON.stringify(todos));
+      renderTodos();
+    }
+
+    function renderTodos() {
+      activeTodosList.innerHTML = '';
+      completedTodosList.innerHTML = '';
+      overdueTodosList.innerHTML = '';
+
+      const yesterday = new Date(new Date().getTime() - 24 * 60 * 60 * 1000);;
+
+      let i_todo = 1;
+      todos.forEach(todo => {
+        const li = document.createElement('li');
+        li.className = 'p-2 border';
+        li.id = `li-todo-${i_todo}`;
+
+        const isOverdue = new Date(todo.dueDate) <= yesterday;
+
+        li.innerHTML = `
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-1">
+              <input id="checkbox-todo-${i_todo}" type="checkbox">
+              <div class="flex-grow">
+                <p class="font-bold">${todo.title}</p>
+                <p class="text-gray-500">Priority: ${todo.priority}</p>
+                <p class="text-gray-500">Due: ${todo.dueDate}</p>
+              </div>
+            </div>
+            <div>
+              <button class="text-blue-500 underline" onclick="toggleDetails(${todo.id})">Details</button>
+              <button class="text-green-500 ml-2" onclick="markAsDone(${todo.id})">Done</button>
+              <button class="text-red-500 ml-2" onclick="deleteTodo(${todo.id})">Delete</button>
+            </div>
+          </div>
+        `;
+
+        let bg_color = "bg-yellow-50";
+        let border_color = 'border-yellow-300'
+        if (todo.completed) {
+          completedTodosList.appendChild(li);
+          bg_color = "bg-emerald-50";
+          border_color = "border-emerald-300";
+        } else if (isOverdue) {
+          overdueTodosList.appendChild(li);
+          bg_color = "bg-rose-50";
+          border_color = "border-rose-300";
+        } else {
+          activeTodosList.appendChild(li);
+        }
+
+        document.getElementById(`li-todo-${i_todo}`).classList.add(bg_color);
+        document.getElementById(`li-todo-${i_todo}`).classList.add(border_color);
+
+        i_todo++;
+
+        console.log(todo);
+      });
+    }
+
+    function toggleDetails(id) {
+      const todo = todos.find(t => t.id === id);
+      alert(`Detail: ${todo.detail}`);
+    }
+
+    function markAsDone(id) {
+      const todo = todos.find(t => t.id === id);
+      if (todo) {
+        todo.completed = true;
+        localStorage.setItem('todos', JSON.stringify(todos));
+        renderTodos();
+      }
+    }
+
+    function deleteTodo(id) {
+      const index = todos.findIndex(t => t.id === id);
+      if (index !== -1) {
+        todos.splice(index, 1);
+        localStorage.setItem('todos', JSON.stringify(todos));
+        renderTodos();
+      }
+    }
+
+    saveUserBtn.addEventListener('click', saveUser);
+    addTodoBtn.addEventListener('click', addTodo);
+    
+    renderTodos();
+
+    /*If user info exist, hide form-user-info*/
+    getUserInfo();
+    function getUserInfo() {
+      const user_info = localStorage.getItem('user');
+      // const test = localStorage.getItem('test');
+      console.log(user_info);
+      // console.log(test);
+      if (user_info) {
+        document.getElementById('form-user-info').classList.add('hidden');
+        let html_user_info;
+      }
+    }
+
+  </script>
+
+  <script src="todo.js"></script>
+</body>
+</html>
