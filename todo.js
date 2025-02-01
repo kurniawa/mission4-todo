@@ -1,13 +1,23 @@
-document.getElementById('button-detail-todo').addEventListener('click', function () {
-    const textarea_todo_detail = document.getElementById('textarea-todo-detail');
-    if (window.getComputedStyle(textarea_todo_detail, null).display == 'block') {
-        textarea_todo_detail.classList.add('hidden');
-        this.classList.remove("bg-yellow-300");
+// document.getElementById('button-detail-todo').addEventListener('click', function () {
+//     const divTodoDetail = document.getElementById('div-todo-detail');
+//     if (window.getComputedStyle(divTodoDetail, null).display == 'block') {
+//         divTodoDetail.classList.add('hidden');
+//         this.classList.remove("bg-yellow-300");
+//     } else {
+//         divTodoDetail.classList.remove('hidden');
+//         this.classList.add("bg-yellow-300");
+//     }
+// });
+function toggleTodoDetail(buttonDetail) {
+    const divTodoDetail = document.getElementById('div-todo-detail');
+    if (!divTodoDetail.classList.contains('hidden')) {
+        divTodoDetail.classList.add('hidden');
+        buttonDetail.classList.remove("bg-yellow-300");
     } else {
-        textarea_todo_detail.classList.remove('hidden');
-        this.classList.add("bg-yellow-300");
+        divTodoDetail.classList.remove('hidden');
+        buttonDetail.classList.add("bg-yellow-300");
     }
-});
+}
 
 // Set nilai default todoDate dan todoDueDate menjadi today
 const todo_date = document.getElementById('todoDate');
@@ -18,58 +28,103 @@ todo_due_date.value = todo_date.value;
 
 // console.log(new Date());
 
-function selectAllActive(checkbox_select_all) {
+function selectAll(checkbox_select_all, status) {
     // console.log(checkbox_select_all.checked);
-    const button_wrapper_select_active = document.getElementById('button-wrapper-select-active');
-    const checkbox_active = document.querySelectorAll('.checkbox-active');
+    const options_select = document.getElementById(`options-select-${status}`);
+    const checkboxes = document.querySelectorAll(`.checkbox-${status}`);
     if (checkbox_select_all.checked) {
-        if (button_wrapper_select_active.classList.contains("hidden")) {
-            button_wrapper_select_active.classList.remove('hidden');
+        if (options_select.classList.contains("hidden")) {
+            options_select.classList.remove('hidden');
         }
-        checkbox_active.forEach(element => {
+        checkboxes.forEach(element => {
             element.checked = true;
         });
     } else {
-        if (!button_wrapper_select_active.classList.contains("hidden")) {
-            button_wrapper_select_active.classList.add('hidden');
+        if (!options_select.classList.contains("hidden")) {
+            options_select.classList.add('hidden');
         }
-        checkbox_active.forEach(element => {
+        checkboxes.forEach(element => {
             element.checked = false;
         });
     }
 }
 
 function selectCertainTodo(selectedCheckbox) {
-    const todos = JSON.parse(localStorage.getItem('todos'));
     const selectedTodo = todos.find(todo => todo.id == selectedCheckbox.value)
-    const otherRelatedTodoCheckbox = document.querySelectorAll(`.checkbox-${selectedTodo.status}`);
+    const allRelatedCheckbox = document.querySelectorAll(`.checkbox-${selectedTodo.status}`);
     count_checked_element = 0;
-    otherRelatedTodoCheckbox.forEach(element => {
+    count_unchecked_element = 0;
+    allRelatedCheckbox.forEach(element => {
         if (element.checked) {
             count_checked_element++;
+        } else {
+            count_unchecked_element++;
         }
     });
 
-    const related_button_wrapper = document.getElementById(`button-wrapper-select-${selectedTodo.status}`);
+    const options_select = document.getElementById(`options-select-${selectedTodo.status}`);
     if (count_checked_element) {
-        if (related_button_wrapper.classList.contains("hidden")) {
-            related_button_wrapper.classList.remove('hidden');
+        if (options_select.classList.contains("hidden")) {
+            options_select.classList.remove('hidden');
         }
     } else {
-        if (!related_button_wrapper.classList.contains("hidden")) {
-            related_button_wrapper.classList.add('hidden');
+        if (!options_select.classList.contains("hidden")) {
+            options_select.classList.add('hidden');
         }
+    }
+
+    if (!count_unchecked_element) {
+        document.getElementById(`select-all-${selectedTodo.status}`).checked = true;
+    } else {
+        document.getElementById(`select-all-${selectedTodo.status}`).checked = false;
     }
 }
 
-function markAsDone() {
-    const checkbox_active = document.querySelectorAll('.checkbox-active');
-    checkbox_active.forEach(element => {
-        if (element.checked) {
-            let todos = JSON.parse(localStorage.getItem("todos"));
-            console.log(todos);
-            let selectedTodo = todos.find(todo => todo.id == element.value);
-            console.log(selectedTodo);
+function resetForm() {
+    const inputTodoTitle = document.getElementById('todoTitle');
+    const textAreaTodoDetail = document.getElementById('todoDetail');
+    const divTodoDetail = document.getElementById('div-todo-detail');
+    const buttonDetail = document.getElementById('button-detail-todo');
+
+    inputTodoTitle.value = '';
+    textAreaTodoDetail.value = '';
+
+    if (!divTodoDetail.classList.contains('hidden')) {
+        divTodoDetail.classList.add('hidden');
+        buttonDetail.classList.remove("bg-yellow-300");
+    }
+}
+
+function markAs(id, status) {
+    const todo = todos.find(todo => todo.id == id);
+    if (todo) {
+        todo.status = status;
+        localStorage.setItem('todos', JSON.stringify(todos));
+        renderTodos();
+    }
+}
+
+function markAsBySelected(begin_status, end_status, to_delete) {
+    const allRelatedCheckbox = document.querySelectorAll(`.checkbox-${begin_status}`);
+    allRelatedCheckbox.forEach(relatedCheckbox => {
+        if (relatedCheckbox.checked) {
+            if (to_delete) {
+                deleteTodo(relatedCheckbox.value);
+            } else {
+                markAs(relatedCheckbox.value, end_status);
+            }
         }
     });
+
+    // reset display hidden to button options select
+    const options_select = document.getElementById(`options-select-${begin_status}`);
+    if (!options_select.classList.contains('hidden')) {
+        options_select.classList.add('hidden');
+    }
+
+    // reset input checkbox selectAll to unchecked
+    const related_checkbox_select_all = document.getElementById(`select-all-${begin_status}`);
+    if (related_checkbox_select_all.checked) {
+        related_checkbox_select_all.checked = false;
+    }
 }
