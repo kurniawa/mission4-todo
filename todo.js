@@ -1,13 +1,12 @@
-// document.getElementById('button-detail-todo').addEventListener('click', function () {
-//     const divTodoDetail = document.getElementById('div-todo-detail');
-//     if (window.getComputedStyle(divTodoDetail, null).display == 'block') {
-//         divTodoDetail.classList.add('hidden');
-//         this.classList.remove("bg-yellow-300");
-//     } else {
-//         divTodoDetail.classList.remove('hidden');
-//         this.classList.add("bg-yellow-300");
-//     }
-// });
+function toggleElement(element_id) {
+    const elementToToggle = document.getElementById(element_id);
+    if (elementToToggle.classList.contains('hidden')) {
+        elementToToggle.classList.remove('hidden');
+    } else {
+        elementToToggle.classList.add('hidden');
+    }
+}
+
 function toggleTodoDetail(buttonDetail) {
     const divTodoDetail = document.getElementById('div-todo-detail');
     if (!divTodoDetail.classList.contains('hidden')) {
@@ -126,5 +125,32 @@ function markAsBySelected(begin_status, end_status, to_delete) {
     const related_checkbox_select_all = document.getElementById(`select-all-${begin_status}`);
     if (related_checkbox_select_all.checked) {
         related_checkbox_select_all.checked = false;
+    }
+}
+
+function editTitleAndDetail(todo_id) {
+    const todo = todos.find(t => t.id == todo_id);
+    const todoTitle = document.getElementById(`input-edit-title-${todo_id}`).value.trim();
+    const todoDetail = document.getElementById(`textarea-edit-detail-${todo_id}`).value.trim();
+
+    // console.log(todoTitle, todoDetail);
+    if (todo && todoTitle) {
+        todo.title = todoTitle;
+        todo.detail = todoDetail;
+
+        localStorage.setItem('todos', JSON.stringify(todos));
+        renderTodos();
+    }
+}
+
+function editPriority(todo_id) {
+    const todo = todos.find(t => t.id == todo_id);
+    const newPriority = document.getElementById(`select-edit-priority-${todo_id}`).value;
+
+    if (todo && newPriority) {
+        todo.priority = newPriority;
+
+        localStorage.setItem('todos', JSON.stringify(todos));
+        renderTodos();
     }
 }

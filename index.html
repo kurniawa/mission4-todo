@@ -7,40 +7,46 @@
   <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-gray-100 p-4 text-slate-600 text-xs">
-  <div class="max-w-xl mx-auto min-h-1/2 border border-slate-300 bg-white shadow p-3">
+  <main class="max-w-xl mx-auto min-h-1/2 border border-slate-300 bg-white shadow p-2">
     <!-- Input for Name and Position -->
     <div id="user-info-wrapper">
       <div id="user-info" class="flex justify-end">
-        <div class="border-b border-slate-300 hover:cursor-pointer">
-          <span class="text-indigo-400 font-bold">Name and Position</span>
-          <span class="text-orange-500">(Click to edit)</span>
-        </div>
+        <button type="button" class="border-b border-slate-300 hover:cursor-pointer" onclick="toggleElement('form-user-info')">
+          <span id="user-name" class="text-indigo-400 font-bold"></span>
+          <span class="text-orange-500">(<span id="user-position"></span>)</span>
+        </button>
       </div>
 
-      <div id="form-user-info" class="flex gap-1 mt-2">
-        <input id="name" type="text" placeholder="Name" class="w-full p-2 border border-slate-300 rounded">
-        <input id="position" type="text" placeholder="Position" class="w-full p-2 border border-slate-300 rounded">
-        <button id="cancelSaveUser" class="bg-rose-400 text-white px-4 py-2 rounded hover:cursor-pointer">Cancel</button>
-        <button id="saveUser" class="bg-blue-400 text-white px-4 py-2 rounded hover:cursor-pointer">Save</button>
+      <div id="form-user-info" class="hidden">
+        <div class="flex gap-1 mt-2">
+          <input id="name" type="text" placeholder="Name" class="w-full p-2 border border-slate-300 rounded">
+          <input id="position" type="text" placeholder="Position" class="w-full p-2 border border-slate-300 rounded">
+          <button id="cancelSaveUser" class="bg-rose-400 text-white px-4 py-2 rounded hover:cursor-pointer" onclick="toggleElement('form-user-info')">Cancel</button>
+          <button id="saveUser" class="bg-blue-400 text-white px-4 py-2 rounded hover:cursor-pointer">Save</button>
+        </div>
       </div>
     </div>
 
     <!-- Input for To-Do -->
     <div class="mt-5">
       <div class="">
-        <div class="border border-slate-300 p-1 flex gap-1 flex-wrap">
+        <div class="border border-slate-300 p-1 flex gap-1">
           <div class="flex-grow">
             <input id="todoTitle" type="text" placeholder="To do" class="p-2 w-full">
           </div>
           <div class="flex items-center">
-            <span>Priority:</span>
+            <span class="sm:hidden">Prior:</span>
+            <span class="hidden sm:inline-block">Priority:</span>
           </div>
           <select id="todoPriority" class="border border-slate-300">
             <option value="Low">Low</option>
             <option value="Medium">Medium</option>
             <option value="High">High</option>
           </select>
-          <button id="button-detail-todo" type="button" class="px-1 text-yellow-600 font-bold border-2 border-yellow-400 hover:cursor-pointer" onclick="toggleTodoDetail(this)">Detail</button>
+          <button id="button-detail-todo" type="button" class="px-1 text-yellow-600 font-bold border-2 border-yellow-400 hover:cursor-pointer" onclick="toggleTodoDetail(this)">
+            <span class="sm:hidden">D</span>
+            <span class="hidden sm:inline-block">Detail</span>
+          </button>
           <button type="button" id="addTodo" class="px-1 bg-emerald-300 text-white font-bold border-2 border-emerald-400 hover:cursor-pointer">
             <span class="sm:hidden">Add</span>
             <span class="hidden sm:inline-block">Add To-do</span>
@@ -52,11 +58,11 @@
             <div class="">
               <div>
                 <label for="begin">Begin:</label>
-                <div><input id="todoDate" type="date" class="p-2 border border-slate-300"></div>
+                <div><input id="todoDate" type="date" class="sm:p-2 border border-slate-300"></div>
               </div>
               <div class="mt-2">
-                <label for="due-date">Due date:</label>
-                <div><input id="todoDueDate" type="date" class="p-2 border border-slate-300"></div>
+                <label for="due-date">Due:</label>
+                <div><input id="todoDueDate" type="date" class="sm:p-2 border border-slate-300"></div>
               </div>
             </div>
           </div>
@@ -67,7 +73,7 @@
     <!-- To-Do Lists -->
     <div class="mt-5">
       <div id="activeTodoList">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Active To-Do List</h2>
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Actives</h2>
         <div>
           <div class="flex gap-5">
             <div class="hidden" id="div-selectAllActive">
@@ -88,7 +94,7 @@
       </div>
 
       <div id="completedTodoList">
-        <h2 class="text-xl font-bold text-gray-800 mt-8 mb-4">Completed To-Do</h2>
+        <h2 class="text-xl font-bold text-gray-800 mt-8 mb-4">Completed</h2>
         <div>
           <div class="flex gap-5">
             <div id="div-selectAllDone" class="hidden">
@@ -109,7 +115,7 @@
       </div>
 
       <div id="overdueTodoList">
-        <h2 class="text-xl font-bold text-gray-800 mt-8 mb-4">Overdue To-Do</h2>
+        <h2 class="text-xl font-bold text-gray-800 mt-8 mb-4">Overdues</h2>
         <div>
           <div class="flex gap-5">
             <div id="div-selectAllOverdue" class="hidden">
@@ -128,12 +134,29 @@
         </div>
       </div>
       </div>
-  </div>
+    </main>
+
+    <div class="max-w-xl mx-auto min-h-1/2 border border-slate-300 bg-white shadow p-2 mt-5">
+      <p class="font-bold text-sm">Terimakasih telah menggunakan Todo-App ini!</p>
+      <p class="font-bold">Berikut adalah fitur-fitur yang terdapat pada Todo-App ini:</p>
+      <ol class="list-decimal">
+        <li>Untuk fungsi penyimpanan data, Todo-App ini memanfaatkan localStorage.</li>
+        <li>Anda dapat menentukan info user, yakni nama dan posisi/jabatan</li>
+        <li>Anda dapat edit info user tersebut</li>
+        <li>Pada saat insert todo, anda dapat menambahkan priority_level, detail/deskripsi todo anda, serta tanggal molai dan tenggat waktu dari todo yang ingin anda buat.</li>
+        <li>Semua data (seperti: title, detail, priority_level, tanggal) dapat diedit/diubah apabila kurang sesuai</li>
+        <li>Anda dapat mengubah status todo active menjadi done dan begitu juga sebaliknya.</li>
+        <li>Anda dapat menghapus todo yang telah anda buat</li>
+        <li>Anda dapat memanfaatkan select all atau select sebagian, lalu mengubah sekaligus dari active menjadi done atau sebaliknya, serta menghapus sekaligus semua todo yang telah ditandai.</li>
+      </ol>
+    </div>
 
   <script>
     const nameInput = document.getElementById('name');
     const positionInput = document.getElementById('position');
     const saveUserBtn = document.getElementById('saveUser');
+    const user_name = document.getElementById('user-name');
+    const user_position = document.getElementById('user-position');
 
     const todoTitleInput = document.getElementById('todoTitle');
     const todoDetailInput = document.getElementById('todoDetail');
@@ -155,6 +178,12 @@
       };
       localStorage.setItem('user', JSON.stringify(user));
       alert('User information saved!');
+      toggleFormUserInfo();
+      nameInput.value = '';
+      positionInput.value = '';
+
+      // render user info
+      getUserInfo();
     }
 
     function addTodo() {
@@ -188,47 +217,94 @@
 
       todos.forEach(todo => {
         const li = document.createElement('li');
-        li.className = 'p-2 border';
+        li.className = 'border';
         li.id = `li-todo-${todo.id}`;
 
         const isOverdue = new Date(todo.dueDate) < yesterday;
-        // console.log(yesterday);
-        // console.log(new Date(todo.dueDate));
-        // console.log(isOverdue);
 
-        let todoDetailHTML = '';
+        // Menampilkan detail/description dari todo
+        let todoDetailHTML = ``;
         if (todo.detail) {
-          todoDetailHTML += `<p id="todo-detail-${todo.id}" class="p-1 border border-slate-300 text-slate-400 w-fit">${todo.detail}</p>`;
+          todoDetailHTML = `<p id="todo-detail-${todo.id}" class="p-1 border border-slate-300 text-slate-400 w-fit" onclick="toggleElement('div-edit-title-and-detail-${todo.id}')">${todo.detail}</p>`;
         }
 
+        // Menentukan button yang perlu dimunculkan berdasarkan status active, done dan overdue
+        // Menentukan warna background dari opsi-opsi (delete, mark as active, mark as done)
         let markButtonHTML = '';
+        let bgColorDivOptionButtons = 'bg-yellow-200';
         if (todo.status == 'done') {
-          markButtonHTML = `<button type="button" class="hover:cursor-pointer text-yellow-500" onclick="markAs(${todo.id}, 'active')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="size-5">
+          markButtonHTML = `<button type="button" class="hover:cursor-pointer text-yellow-500 bg-yellow-100 p-[1px] rounded drop-shadow shadow" onclick="markAs(${todo.id}, 'active')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="size-5">
             <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
             <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />
           </svg></button>`;
+          bgColorDivOptionButtons = 'bg-emerald-100';
         } else if (isOverdue) {
-          
+          bgColorDivOptionButtons = 'bg-rose-200'
         } else {
-          markButtonHTML = `<button class="hover:cursor-pointer text-green-500" onclick="markAs(${todo.id}, 'done')">
+          markButtonHTML = `<button class="hover:cursor-pointer text-green-500 bg-emerald-100 p-[1px] rounded drop-shadow shadow" onclick="markAs(${todo.id}, 'done')">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                 </svg>
               </button>`;
         }
 
+        // Menentukan warna dari priority dari masing-masing todo
+        let priorityColor = 'text-indigo-500';
+        if (todo.priority == 'Medium') {
+          priorityColor = 'text-yellow-500';
+        } else if (todo.priority == 'High') {
+          priorityColor = 'text-pink-500';
+        }
+
+        // Element untuk edit todo title dan detail
+        let editTitleAndDetailTodo = `<div id="div-edit-title-and-detail-${todo.id}" class="hidden mt-1 w-fit">
+          <table style="border-collapse:separate; border-spacing:0 5px">
+            <tr><td>Title</td><td class="px-1">:</td><td><input id="input-edit-title-${todo.id}" type="text" value="${todo.title}" class="border p-1 border-slate-400 bg-white"></td></tr>
+            <tr><td>Detail</td><td class="px-1">:</td>
+              <td><textarea id="textarea-edit-detail-${todo.id}"  cols="25" rows="3" class="border p-1 border-slate-400 bg-white">${todo.detail}</textarea></td>
+            </tr>
+          </table>
+          <div class="flex justify-end gap-1">
+            <button type="button" class="hover:cursor-pointer bg-slate-200 px-2 py-1" onclick="toggleElement('div-edit-title-and-detail-${todo.id}')">Cancel</button>
+            <button type="button" class="hover:cursor-pointer bg-emerald-200 px-2 py-1" onclick="editTitleAndDetail(${todo.id})">Confirm</button>
+          </div>
+        </div>`;
+
+        // Element untuk edit priority
+        let editPriority = `<div id="div-edit-priority-${todo.id}" class="hidden mt-1"><select id="select-edit-priority-${todo.id}" class="border border-slate-300 bg-white" onchange="editPriority(${todo.id})">
+          <option value="Low"${todo.priority == "Low" ? ' selected' : ''}>Low</option>
+          <option value="Medium"${todo.priority == "Medium" ? ' selected' : ''}>Medium</option>
+          <option value="High"${todo.priority == "High" ? ' selected' : ''}>High</option>
+        </select></div>`;
+
+        // Element untuk edit begin
+        let editBegin = `<div id="div-edit-begin-${todo.id}"><input id="edit-begin-${todo.id}" type="date" class="border border-slate-300 bg-white"></div>`;
+
         li.innerHTML = `
           <div class="flex justify-between items-center">
-            <div class="flex-grow flex items-center gap-1">
+            <div class="flex-grow flex items-center gap-1 pl-1 py-1">
               <input id="checkbox-todo-${todo.id}" type="checkbox" name="todo" value="${todo.id}" onclick="selectCertainTodo(this)">
               <div class="flex-grow">
-                <p class="font-bold">${todo.title}</p>${todoDetailHTML}
-                <div class="flex gap-3 flex-wrap justify-between"><p class="text-gray-500">Priority: ${todo.priority}</p><p class="text-gray-500">Due: ${todo.dueDate}</p></div>
+                <p class="font-bold" onclick="toggleElement('div-edit-title-and-detail-${todo.id}')">${todo.title}</p>${todoDetailHTML}
+                ${editTitleAndDetailTodo}
+                <div class="flex justify-between text-gray-500">
+                  <div><p onclick="toggleElement('div-edit-priority-${todo.id}')">Priority: <span class="font-bold ${priorityColor}">${todo.priority}</span></p>${editPriority}</div>
+                  <div class="text-center">
+                    <p class="text-blue-500" onclick="toggleElement('div-edit-begin-${todo.id}')">
+                      <span class="hidden sm:inline">Begin: </span>${todo.date}
+                    </p>${editBegin}
+                  </div>
+                  <div class="text-center">
+                    <p class="text-red-500" onclick="toggleElement('div-edit-begin-${todo.id}')">
+                      <span class="hidden sm:inline">Due: </span>${todo.dueDate}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="flex gap-1">
+            <div class="flex flex-col gap-1 ml-1 self-stretch flex flex-col justify-around drop-shadow ${bgColorDivOptionButtons}">
               ${markButtonHTML}
-              <button class="hover:cursor-pointer text-red-400" onclick="deleteTodo(${todo.id})">
+              <button class="hover:cursor-pointer text-red-500 bg-red-300 p-[1px] drop-shadow rounded" onclick="deleteTodo(${todo.id})">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                 </svg>
@@ -292,7 +368,7 @@
     }
 
     function toggleDetails(id) {
-      const todo = todos.find(t => t.id === id);
+      const todo = todos.find(t => t.id == id);
       alert(`Detail: ${todo.detail}`);
     }
 
@@ -314,13 +390,16 @@
     /*If user info exist, hide form-user-info*/
     getUserInfo();
     function getUserInfo() {
-      const user_info = localStorage.getItem('user');
-      // const test = localStorage.getItem('test');
-      // console.log(user_info);
-      // console.log(test);
-      if (user_info) {
-        document.getElementById('form-user-info').classList.add('hidden');
-        let html_user_info;
+      const user_info = JSON.parse(localStorage.getItem('user'));
+      if (user_info.name) {
+        user_name.textContent = `Hi, ${user_info.name}`;
+        user_position.textContent = "human";
+          if (user_info.position) {
+          user_position.textContent = user_info.position;
+        }
+      } else {
+        user_name.textContent = "Name and Position";
+        user_position.textContent = "Click to edit";
       }
     }
 
