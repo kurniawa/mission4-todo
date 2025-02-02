@@ -19,11 +19,8 @@ function toggleTodoDetail(buttonDetail) {
 }
 
 // Set nilai default todoDate dan todoDueDate menjadi today
-const todo_date = document.getElementById('todoDate');
-const todo_due_date = document.getElementById('todoDueDate');
-
-todo_date.valueAsDate = new Date();
-todo_due_date.value = todo_date.value;
+todoDateInput.valueAsDate = new Date();
+todoDueDateInput.value = todoDateInput.value;
 
 // console.log(new Date());
 
@@ -114,13 +111,13 @@ function selectCertainTodo(selectedCheckbox) {
 }
 
 function resetForm() {
-    const inputTodoTitle = document.getElementById('todoTitle');
-    const textAreaTodoDetail = document.getElementById('todoDetail');
     const divTodoDetail = document.getElementById('div-todo-detail');
     const buttonDetail = document.getElementById('button-detail-todo');
 
-    inputTodoTitle.value = '';
-    textAreaTodoDetail.value = '';
+    todoTitleInput.value = '';
+    todoDetailInput.value = '';
+    todoDateInput.valueAsDate = new Date();
+    todoDueDateInput.value = todoDateInput.value;
 
     if (!divTodoDetail.classList.contains('hidden')) {
         divTodoDetail.classList.add('hidden');
