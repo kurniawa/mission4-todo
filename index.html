@@ -72,8 +72,15 @@
 
     <!-- To-Do Lists -->
     <div class="mt-5">
+      <div id="starredTodoList">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Starred</h2>
+        <div>
+          <ul id="starredTodos" class="mt-2 space-y-2"></ul>
+        </div>
+      </div>
+
       <div id="activeTodoList">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Actives</h2>
+        <h2 class="text-xl font-bold text-gray-800 mt-5 mb-4">Actives</h2>
         <div>
           <div class="flex gap-5">
             <div class="hidden" id="div-selectAllActive">
@@ -94,7 +101,7 @@
       </div>
 
       <div id="completedTodoList">
-        <h2 class="text-xl font-bold text-gray-800 mt-8 mb-4">Completed</h2>
+        <h2 class="text-xl font-bold text-gray-800 mt-5 mb-4">Completed</h2>
         <div>
           <div class="flex gap-5">
             <div id="div-selectAllDone" class="hidden">
@@ -115,7 +122,7 @@
       </div>
 
       <div id="overdueTodoList">
-        <h2 class="text-xl font-bold text-gray-800 mt-8 mb-4">Overdues</h2>
+        <h2 class="text-xl font-bold text-gray-800 mt-5 mb-4">Overdues</h2>
         <div>
           <div class="flex gap-5">
             <div id="div-selectAllOverdue" class="hidden">
@@ -138,12 +145,17 @@
 
     <div class="max-w-xl mx-auto min-h-1/2 border border-slate-300 bg-white shadow p-2 mt-5">
       <p class="font-bold text-sm">Terimakasih telah menggunakan Todo-App ini!</p>
-      <p class="font-bold">Berikut adalah fitur-fitur yang terdapat pada Todo-App ini:</p>
-      <ol class="list-decimal">
-        <li>Untuk fungsi penyimpanan data, Todo-App ini memanfaatkan localStorage.</li>
-        <li>Anda dapat menentukan info user, yakni nama dan posisi/jabatan</li>
-        <li>Anda dapat edit info user tersebut</li>
-        <li>Pada saat insert todo, anda dapat menambahkan priority_level, detail/deskripsi todo anda, serta tanggal molai dan tenggat waktu dari todo yang ingin anda buat.</li>
+      <div class="bg-emerald-100 p-1 border border-emerald-300 mt-2">
+        <p class="font-bold">Berikut adalah info penting:</p>
+        <ol class="list-decimal list-inside">
+          <li>Untuk fungsi penyimpanan data, Todo-App ini memanfaatkan localStorage.</li>
+          <li>Kategori <span class="font-bold">Starred</span> ditujukan untuk todo yang selalu dilakukan setiap harinya. Ada sedikit perbedaan sifat pada daftar todo starred ini dibandingkan dengan kategori Actives, Completed dan Overdues. Silahkan dicoba!</li>
+        </ol>
+      </div>
+      <p class="font-bold mt-5">Fitur lainnya:</p>
+      <ol class="list-decimal list-inside">
+        <li>Anda dapat menentukan info user, yakni nama dan posisi/jabatan, serta edit/mengubah info user tersebut.</li>
+        <li>Pada saat insert todo, anda dapat menambahkan priority_level, detail/deskripsi todo anda, serta tanggal mulai dan tenggat waktu dari todo yang ingin anda buat.</li>
         <li>Semua data (seperti: title, detail, priority_level, tanggal) dapat diedit/diubah apabila kurang sesuai</li>
         <li>Anda dapat mengubah status todo active menjadi done dan begitu juga sebaliknya.</li>
         <li>Anda dapat menghapus todo yang telah anda buat</li>
@@ -165,9 +177,11 @@
     const todoPriorityInput = document.getElementById('todoPriority');
     const addTodoBtn = document.getElementById('addTodo');
 
+    const starredTodoList = document.getElementById('starredTodos');
     const activeTodosList = document.getElementById('activeTodos');
     const completedTodosList = document.getElementById('completedTodos');
     const overdueTodosList = document.getElementById('overdueTodos');
+    const weekday = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
     const todos = JSON.parse(localStorage.getItem('todos')) || [];
 
@@ -177,8 +191,7 @@
         position: positionInput.value,
       };
       localStorage.setItem('user', JSON.stringify(user));
-      alert('User information saved!');
-      toggleFormUserInfo();
+      toggleElement('form-user-info');
       nameInput.value = '';
       positionInput.value = '';
 
@@ -187,15 +200,26 @@
     }
 
     function addTodo() {
+      const new_begin_date = new Date(todoDateInput.value);
+      const new_due_date = new Date(todoDueDateInput.value);
+
+      const begin_dayname = weekday[new_begin_date.getDay()];
+      const due_dayname = weekday[new_due_date.getDay()];
+
       const newTodo = {
         id: Date.now(),
-        title: todoTitleInput.value,
-        detail: todoDetailInput.value,
-        date: todoDateInput.value,
-        dueDate: todoDueDateInput.value,
+        title: todoTitleInput.value.trim(),
+        detail: todoDetailInput.value.trim(),
+        begin: todoDateInput.value,
+        begin_f: new_begin_date.toLocaleDateString('ru-RU'),
+        begin_dayname: begin_dayname,
+        due: todoDueDateInput.value,
+        due_f: new_due_date.toLocaleDateString('ru-RU'),
+        due_dayname: due_dayname,
         priority: todoPriorityInput.value,
         createdAt: new Date().toISOString(),
         status: "active", // active, overdue, completed
+        starred: false, // untuk todo yang selalu dilakukan tiap hari/periodical
       };
 
       todos.push(newTodo);
@@ -205,12 +229,14 @@
     }
 
     function renderTodos() {
+      starredTodoList.innerHTML = '';
       activeTodosList.innerHTML = '';
       completedTodosList.innerHTML = '';
       overdueTodosList.innerHTML = '';
 
       const yesterday = new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
 
+      let countStarred = 0;
       let countActive = 0;
       let countDone = 0;
       let countOverdue = 0;
@@ -220,33 +246,7 @@
         li.className = 'border';
         li.id = `li-todo-${todo.id}`;
 
-        const isOverdue = new Date(todo.dueDate) < yesterday;
-
-        // Menampilkan detail/description dari todo
-        let todoDetailHTML = ``;
-        if (todo.detail) {
-          todoDetailHTML = `<p id="todo-detail-${todo.id}" class="p-1 border border-slate-300 text-slate-400 w-fit" onclick="toggleElement('div-edit-title-and-detail-${todo.id}')">${todo.detail}</p>`;
-        }
-
-        // Menentukan button yang perlu dimunculkan berdasarkan status active, done dan overdue
-        // Menentukan warna background dari opsi-opsi (delete, mark as active, mark as done)
-        let markButtonHTML = '';
-        let bgColorDivOptionButtons = 'bg-yellow-200';
-        if (todo.status == 'done') {
-          markButtonHTML = `<button type="button" class="hover:cursor-pointer text-yellow-500 bg-yellow-100 p-[1px] rounded drop-shadow shadow" onclick="markAs(${todo.id}, 'active')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="size-5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />
-          </svg></button>`;
-          bgColorDivOptionButtons = 'bg-emerald-100';
-        } else if (isOverdue) {
-          bgColorDivOptionButtons = 'bg-rose-200'
-        } else {
-          markButtonHTML = `<button class="hover:cursor-pointer text-green-500 bg-emerald-100 p-[1px] rounded drop-shadow shadow" onclick="markAs(${todo.id}, 'done')">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                </svg>
-              </button>`;
-        }
+        const isOverdue = new Date(todo.due) < yesterday;
 
         // Menentukan warna dari priority dari masing-masing todo
         let priorityColor = 'text-indigo-500';
@@ -255,6 +255,30 @@
         } else if (todo.priority == 'High') {
           priorityColor = 'text-pink-500';
         }
+
+        // Element untuk priority
+        let priority_html = `<div><p onclick="toggleElement('div-edit-priority-${todo.id}')">Priority: <span class="font-bold ${priorityColor}">${todo.priority}</span></p>
+          <div id="div-edit-priority-${todo.id}" class="hidden mt-1"><select id="select-edit-priority-${todo.id}" class="border border-slate-300 bg-white" onchange="editPriority(${todo.id})">
+            <option value="Low"${todo.priority == "Low" ? ' selected' : ''}>Low</option>
+            <option value="Medium"${todo.priority == "Medium" ? ' selected' : ''}>Medium</option>
+            <option value="High"${todo.priority == "High" ? ' selected' : ''}>High</option>
+          </select></div></div>`;
+
+        // Element untuk tanggal begin
+        let begin_html = `<div class="text-center">
+          <p class="text-blue-500" onclick="toggleElement('div-edit-begin-${todo.id}')">
+            <span class="hidden sm:inline">Begin: </span><span class="hidden sm:inline">${todo.begin_dayname}. </span><span>${todo.begin_f}</span>
+          </p>
+          <div id="div-edit-begin-${todo.id}" class="hidden"><input id="edit-begin-${todo.id}" type="date" value="${todo.begin}" class="border border-slate-300 bg-white" onchange="changeDate(this.value, ${todo.id}, 'begin')"></div>
+        </div>`;
+
+        // Element untuk due_date
+        let due_html = `<div class="text-center">
+          <p class="text-red-500" onclick="toggleElement('div-edit-due-${todo.id}')">
+            <span class="hidden sm:inline">Due: </span><span class="hidden sm:inline">${todo.due_dayname}. </span><span>${todo.due_f}</span>
+          </p>
+          <div id="div-edit-due-${todo.id}" class="hidden"><input id="edit-due-${todo.id}" type="date" value="${todo.due}" class="border border-slate-300 bg-white" onchange="changeDate(this.value, ${todo.id}, 'due')"></div>
+        </div>`;
 
         // Element untuk edit todo title dan detail
         let editTitleAndDetailTodo = `<div id="div-edit-title-and-detail-${todo.id}" class="hidden mt-1 w-fit">
@@ -270,39 +294,95 @@
           </div>
         </div>`;
 
-        // Element untuk edit priority
-        let editPriority = `<div id="div-edit-priority-${todo.id}" class="hidden mt-1"><select id="select-edit-priority-${todo.id}" class="border border-slate-300 bg-white" onchange="editPriority(${todo.id})">
-          <option value="Low"${todo.priority == "Low" ? ' selected' : ''}>Low</option>
-          <option value="Medium"${todo.priority == "Medium" ? ' selected' : ''}>Medium</option>
-          <option value="High"${todo.priority == "High" ? ' selected' : ''}>High</option>
-        </select></div>`;
+        // Menyatukan sebagian elemen. Penyatuan ini supaya dapat mengubah tampilan, terutama bagian starred.
+        let todo_html = `<div class="flex-grow">
+          <p id="todo-title-${todo.id}" class="font-bold" onclick="toggleElement('div-edit-title-and-detail-${todo.id}')">${todo.title}</p>
+          <p id="todo-detail-${todo.id}" class="p-1 border border-slate-300 text-slate-400 w-fit" onclick="toggleElement('div-edit-title-and-detail-${todo.id}')">${todo.detail}</p>
+          ${editTitleAndDetailTodo}
+          <div class="flex justify-between text-gray-500">
+            ${priority_html}
+            ${begin_html}
+            ${due_html}
+          </div>
+        </div>`;
 
-        // Element untuk edit begin
-        let editBegin = `<div id="div-edit-begin-${todo.id}"><input id="edit-begin-${todo.id}" type="date" class="border border-slate-300 bg-white"></div>`;
+        // Menentukan button color dan background-color dari masing-masing kategori todo-list
+        // Menentukan button yang perlu dimunculkan berdasarkan status active, done dan overdue, serta starred
+        // Menentukan warna background dari opsi-opsi (delete, mark as active, mark as done)
+        // Menentukan class line-through khusus untuk starred todo list
+        let markButtonHTML = '';
+        let bgColorDivOptionButtons = ' bg-yellow-200';
+        let bg_color = 'bg-yellow-50';
+        let border_color = 'border-yellow-300';
+        let todo_detail_bg_color = 'bg-yellow-100';
+        let set_checkbox_class = 'checkbox-active';
+        let class_starred = ''; // khusus untuk starred apabila di check, maka dia akan tercoret (line-through)
 
+        if (todo.starred) {
+          markButtonHTML = `<button type="button" class="hover:cursor-pointer text-violet-500 bg-yellow-100 p-[1px] rounded drop-shadow shadow" onclick="markAs(${todo.id}, 'unstarred')"><svg xmlns="http://www.w3.org/2000/svg" fill="oklch(0.811 0.111 293.571)" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+            </svg></button>`;
+          set_checkbox_class = 'checkbox-starred';
+          bg_color = 'bg-violet-50';
+          border_color = 'border-violet-300';
+
+          todo_html = `<div class="flex-grow flex">
+            <div class="flex-grow">
+              <p id="todo-title-${todo.id}" class="font-bold" onclick="toggleElement('div-edit-title-and-detail-${todo.id}')">${todo.title}</p>
+              <p id="todo-detail-${todo.id}" class="p-1 border border-slate-300 text-slate-400 w-fit" onclick="toggleElement('div-edit-title-and-detail-${todo.id}')">${todo.detail}</p>
+              ${editTitleAndDetailTodo}
+            </div>
+            ${priority_html}
+          </div>`;
+
+          if (todo.status == 'done') {
+            class_starred = 'line-through';
+          }
+
+        }else if (todo.status == 'done') {
+
+          markButtonHTML = `<button type="button" class="hover:cursor-pointer text-yellow-500 bg-yellow-100 p-[1px] rounded drop-shadow shadow" onclick="markAs(${todo.id}, 'active')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="size-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 18.75 7.5-7.5 7.5 7.5" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 7.5-7.5 7.5 7.5" />
+          </svg></button><button type="button" class="hover:cursor-pointer text-violet-500 bg-yellow-100 p-[1px] rounded drop-shadow shadow" onclick="markAs(${todo.id}, 'starred')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+            </svg></button>`;
+          bgColorDivOptionButtons = ' bg-emerald-100';
+          bg_color = 'bg-emerald-50';
+          border_color = 'border-emerald-300';
+          todo_detail_bg_color = 'border-emerald-400';
+          set_checkbox_class = 'checkbox-done';
+
+        } else if (isOverdue) {
+
+          bgColorDivOptionButtons = ' bg-rose-200';
+          markButtonHTML = `<button type="button" class="hover:cursor-pointer text-violet-500 bg-yellow-100 p-[1px] rounded drop-shadow shadow" onclick="markAs(${todo.id}, 'starred')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+            </svg></button>`;
+          
+          bg_color = 'bg-rose-50';
+          border_color = 'border-rose-300';
+          todo_detail_bg_color = 'border-rose-400';
+          set_checkbox_class = 'checkbox-overdue';
+          todo.status = 'overdue';
+
+        } else {
+          markButtonHTML = `<button class="hover:cursor-pointer text-green-500 bg-emerald-100 p-[1px] rounded drop-shadow shadow" onclick="markAs(${todo.id}, 'done')">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+          </svg></button><button type="button" class="hover:cursor-pointer text-violet-500 bg-yellow-100 p-[1px] rounded drop-shadow shadow" onclick="markAs(${todo.id}, 'starred')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+          </svg></button>`;
+        }
+
+        // Mulai memasukkan semua elemen yang dibutuhkan ke elemen li
         li.innerHTML = `
           <div class="flex justify-between items-center">
             <div class="flex-grow flex items-center gap-1 pl-1 py-1">
-              <input id="checkbox-todo-${todo.id}" type="checkbox" name="todo" value="${todo.id}" onclick="selectCertainTodo(this)">
-              <div class="flex-grow">
-                <p class="font-bold" onclick="toggleElement('div-edit-title-and-detail-${todo.id}')">${todo.title}</p>${todoDetailHTML}
-                ${editTitleAndDetailTodo}
-                <div class="flex justify-between text-gray-500">
-                  <div><p onclick="toggleElement('div-edit-priority-${todo.id}')">Priority: <span class="font-bold ${priorityColor}">${todo.priority}</span></p>${editPriority}</div>
-                  <div class="text-center">
-                    <p class="text-blue-500" onclick="toggleElement('div-edit-begin-${todo.id}')">
-                      <span class="hidden sm:inline">Begin: </span>${todo.date}
-                    </p>${editBegin}
-                  </div>
-                  <div class="text-center">
-                    <p class="text-red-500" onclick="toggleElement('div-edit-begin-${todo.id}')">
-                      <span class="hidden sm:inline">Due: </span>${todo.dueDate}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <input id="checkbox-todo-${todo.id}" class="${set_checkbox_class}" type="checkbox" name="todo" value="${todo.id}" onclick="selectCertainTodo(this)"${(todo.starred && todo.status == 'done') ? ' checked' : ''}>
+              ${todo_html}
             </div>
-            <div class="flex flex-col gap-1 ml-1 self-stretch flex flex-col justify-around drop-shadow ${bgColorDivOptionButtons}">
+            <div class="flex flex-col gap-1 ml-1 self-stretch flex flex-col justify-around drop-shadow${bgColorDivOptionButtons}">
               ${markButtonHTML}
               <button class="hover:cursor-pointer text-red-500 bg-red-300 p-[1px] drop-shadow rounded" onclick="deleteTodo(${todo.id})">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
@@ -313,24 +393,16 @@
           </div>
         `;
 
-        let bg_color = "bg-yellow-50";
-        let border_color = 'border-yellow-300';
-        let todo_detail_bg_color = "bg-yellow-100";
-        let set_checkbox_class = "checkbox-active";
-        if (todo.status == 'done') {
+        if (todo.starred) {
+          starredTodoList.appendChild(li);
+          countStarred++;
+        } else if (todo.status == 'done') {
           completedTodosList.appendChild(li);
-          bg_color = "bg-emerald-50";
-          border_color = "border-emerald-300";
-          todo_detail_bg_color = "border-emerald-400";
-          set_checkbox_class = "checkbox-done";
+          
           countDone++;
         } else if (isOverdue) {
           overdueTodosList.appendChild(li);
-          bg_color = "bg-rose-50";
-          border_color = "border-rose-300";
-          todo_detail_bg_color = "border-rose-400";
-          set_checkbox_class = "checkbox-overdue";
-          todo.status = 'overdue';
+          
           countOverdue++;
         } else {
           activeTodosList.appendChild(li);
@@ -340,13 +412,22 @@
 
         document.getElementById(`li-todo-${todo.id}`).classList.add(bg_color);
         document.getElementById(`li-todo-${todo.id}`).classList.add(border_color);
-        if (todo.detail) {
-          document.getElementById(`todo-detail-${todo.id}`).classList.add(todo_detail_bg_color);
+        if (class_starred) {
+          document.getElementById(`todo-title-${todo.id}`).classList.add(class_starred);
         }
-        document.getElementById(`checkbox-todo-${todo.id}`).classList.add(set_checkbox_class);
+        document.getElementById(`todo-detail-${todo.id}`).classList.add(todo_detail_bg_color);
+        if (!todo.detail) {
+          document.getElementById(`todo-detail-${todo.id}`).classList.add('hidden');
+        }
 
         
       });
+
+      // if (countStarred) {
+      //   document.getElementById('div-selectAllStarred').classList.remove('hidden');
+      // } else {
+      //   document.getElementById('div-selectAllStarred').classList.add('hidden');
+      // }
 
       if (countActive) {
         document.getElementById('div-selectAllActive').classList.remove('hidden');
@@ -391,7 +472,7 @@
     getUserInfo();
     function getUserInfo() {
       const user_info = JSON.parse(localStorage.getItem('user'));
-      if (user_info.name) {
+      if (user_info && user_info.name) {
         user_name.textContent = `Hi, ${user_info.name}`;
         user_position.textContent = "human";
           if (user_info.position) {

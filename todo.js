@@ -50,32 +50,66 @@ function selectAll(checkbox_select_all, status) {
 
 function selectCertainTodo(selectedCheckbox) {
     const selectedTodo = todos.find(todo => todo.id == selectedCheckbox.value)
-    const allRelatedCheckbox = document.querySelectorAll(`.checkbox-${selectedTodo.status}`);
-    count_checked_element = 0;
-    count_unchecked_element = 0;
-    allRelatedCheckbox.forEach(element => {
-        if (element.checked) {
-            count_checked_element++;
-        } else {
-            count_unchecked_element++;
-        }
-    });
 
-    const options_select = document.getElementById(`options-select-${selectedTodo.status}`);
-    if (count_checked_element) {
-        if (options_select.classList.contains("hidden")) {
-            options_select.classList.remove('hidden');
-        }
-    } else {
-        if (!options_select.classList.contains("hidden")) {
-            options_select.classList.add('hidden');
-        }
+    let class_name = selectedTodo.status;
+    if (selectedTodo.starred) {
+        class_name = 'starred';
+
     }
+    const allRelatedCheckbox = document.querySelectorAll(`.checkbox-${class_name}`);
 
-    if (!count_unchecked_element) {
-        document.getElementById(`select-all-${selectedTodo.status}`).checked = true;
+    if (selectedTodo.starred) {
+
+        allRelatedCheckbox.forEach(element => {
+            const todo = todos.find(t => t.id == element.value);
+            if (todo) {
+                const todo_title = document.getElementById(`todo-title-${todo.id}`);
+                if (element.checked) {
+                    todo.status = 'done';
+                    if (!todo_title.classList.contains('line-through')) {
+                        todo_title.classList.add('line-through');
+                    }
+                } else {
+                    todo.status = 'active';
+                    if (todo_title.classList.contains('line-through')) {
+                        todo_title.classList.remove('line-through');
+                    }
+                }
+
+                localStorage.setItem('todos', JSON.stringify(todos));
+                                
+            }
+        });
+
     } else {
-        document.getElementById(`select-all-${selectedTodo.status}`).checked = false;
+        let count_checked_element = 0;
+        let count_unchecked_element = 0;
+        allRelatedCheckbox.forEach(element => {
+            if (element.checked) {
+                count_checked_element++;
+            } else {
+                count_unchecked_element++;
+            }
+        });
+    
+        
+        let options_select = document.getElementById(`options-select-${class_name}`);
+    
+        if (count_checked_element) {
+            if (options_select.classList.contains("hidden")) {
+                options_select.classList.remove('hidden');
+            }
+        } else {
+            if (!options_select.classList.contains("hidden")) {
+                options_select.classList.add('hidden');
+            }
+        }
+    
+        if (!count_unchecked_element) {
+            document.getElementById(`select-all-${class_name}`).checked = true;
+        } else {
+            document.getElementById(`select-all-${class_name}`).checked = false;
+        }
     }
 }
 
@@ -97,7 +131,14 @@ function resetForm() {
 function markAs(id, status) {
     const todo = todos.find(todo => todo.id == id);
     if (todo) {
-        todo.status = status;
+        if (status == 'starred') {
+            todo.starred = true;
+        } else if (status == 'unstarred') {
+            todo.starred = false;
+        } else {
+            todo.status = status;
+        }
+
         localStorage.setItem('todos', JSON.stringify(todos));
         renderTodos();
     }
@@ -149,6 +190,29 @@ function editPriority(todo_id) {
 
     if (todo && newPriority) {
         todo.priority = newPriority;
+
+        localStorage.setItem('todos', JSON.stringify(todos));
+        renderTodos();
+    }
+}
+
+function changeDate(date_value, todo_id, date_type) {
+    // console.log(date_value, todo_id, date_type);
+    const todo = todos.find(t => t.id == todo_id);
+
+    if (todo && date_value) {
+        const new_date = new Date(date_value);
+        const date_value_local = new_date.toLocaleDateString('ru-RU');
+        const dayname = weekday[new_date.getDay()];
+        if (date_type == "begin") {
+            todo.begin = date_value;
+            todo.begin_f = date_value_local;
+            todo.begin_dayname = dayname;
+        } else if (date_type == "due") {
+            todo.due = date_value;
+            todo.due_f = date_value_local;
+            todo.due_dayname = dayname;
+        }
 
         localStorage.setItem('todos', JSON.stringify(todos));
         renderTodos();
